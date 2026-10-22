@@ -1,0 +1,31 @@
+{
+  "kind": "univ4_hook",
+  "hook": {
+    "contract": "TestHook",
+    "constructorArgs": [
+      "$poolManager",
+      "$owner",
+      "$factory"
+    ],
+    "permissions": [
+      "beforeInitialize",
+      "beforeSwap",
+      "afterSwap",
+      "beforeSwapReturnDelta",
+      "afterSwapReturnDelta"
+    ]
+  },
+  "token": {
+    "contract": "TestToken",
+    "name": "test",
+    "symbol": "TEST",
+    "decimals": 18
+  },
+  "pool": {
+    "pairedCurrency": "0x5f7bb59365ce557c26dbcaa4ee9d39a4b95b7127",
+    "fee": 12500,
+    "tickSpacing": 60,
+    "initialPrice": "79228162514264337593543950336"
+  },
+  "notes": "TestHook serves one factory-initialized TEST/IMD pool on Robinhood Chain. Its constructor takes PoolManager, owner and factory in that order; TestToken has no constructor arguments. beforeInitialize accepts calls only from the supplied PoolManager with sender equal to $factory, validates the IMD pair, fee 12500 and tick spacing 60, and permanently binds the first initialized PoolId. TEST is discovered as the other currency, supporting either currency order. token(PoolId) identifies it and totalSupply(PoolId) reads its totalSupply(). The hook charges 1% of the gross IMD leg of buys and sells, separately from the 1.25% LP fee, using FullMath.mulDiv. Specified-IMD partial fills revert; otherwise fees use the actual traded IMD. Fees go directly in IMD to 0x5bff2a2fecd1d6152676813b21346238733beab1 during the swap when payment succeeds; insufficient manager funds or a failed transfer instead mint IMD ERC-6909 claims to the hook, attributed by PoolId. Anyone may call claimFees(PoolId) outside an active manager unlock, including while paused, to redeem available backing to that same recipient; unredeemed claims remain pending. Only $owner may call pause(PoolId), unpause(PoolId) and setAllowed(PoolId,address[],bool). paused(PoolId) and isAllowed(PoolId,address) expose those settings. Buys require an allowlisted tx.origin until 900 seconds after the first successful nonzero swap, which can be a buy or sell. Sells need no allowlisting. Multiple wallets or a shared allowed relayer can defeat wallet-based gating. All pool-dependent state and views use PoolId; unknown pools revert. Liquidity callbacks are disabled, so pause does not block additions, removals or the factory's zero-change fee collection. No ownership transfer, other admin controls, backend signer, upgrade path, ETH conversion, outside pool or price service exists. Permission address mask is 0x20cc. The listed initialPrice is the launch reference value; the deployer derives the opening price from the separate launch policy's opening market cap and deployed token ordering. Supply and allocations are governed by that separate launch policy."
+}
